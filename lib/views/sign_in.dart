@@ -62,7 +62,6 @@ class _SignInPageState extends State<SignInPage> {
               ElevatedButton(onPressed: (){}, child: Text('Đăng nhập')),
 
               TextButton(onPressed: (){},style: TextButton.styleFrom(primary: Colors.blue), child: Text('Quên mật khẩu?')),
-              TextButton(onPressed: (){},style: TextButton.styleFrom(primary: Colors.black26), child: Text('Đăng kí với tên miền khác'))
 
             ],
           ),

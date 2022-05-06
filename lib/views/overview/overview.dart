@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:first_project/model/Product.dart';
+import 'package:first_project/views/generated/locale_keys.g.dart';
 import 'package:first_project/views/overview/data_overview.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -737,7 +739,7 @@ class InfoOverviewItem extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(infoOverview.title),
+                Text(LocaleKeys.get(infoOverview.title)).tr(),
                 Text(
                   infoOverview.value.toString(),
                   style: TextStyle(

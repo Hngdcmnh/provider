@@ -84,7 +84,7 @@ class DataOverview {
 
   List<InfoOverview> getInfoOverview() {
     return [
-      const InfoOverview('Tổng tiền', -1500759.0, 1),
+      const InfoOverview('Total_money', -1500759.0, 1),
       const InfoOverview('    Tiền mặt', -7175009.0, 1),
       const InfoOverview('    Tiền gửi', 21500759.0, 1),
       const InfoOverview('Phải thu', -15759.0, 4),

@@ -1,4 +1,5 @@
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:first_project/views/add.dart';
 import 'package:first_project/views/demo.dart';
 import 'package:first_project/views/home.dart';
@@ -9,8 +10,19 @@ import 'package:flutter/material.dart';
 import 'views/introduce.dart';
 import 'views/overview/overview.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
+
+  runApp(
+    EasyLocalization(
+        supportedLocales: [Locale('ar', 'DZ')],
+        path: 'assets/translations', // <-- change the path of the translation files
+        fallbackLocale: Locale('ar', 'DZ'),
+
+        child: MyApp()
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

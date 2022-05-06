@@ -1,4 +1,5 @@
-
+import 'package:easy_localization/easy_localization.dart';
+import 'package:first_project/views/generated/locale_keys.g.dart';
 import 'package:first_project/views/sign_in.dart';
 import 'package:flutter/material.dart';
 import 'demo.dart';
@@ -29,7 +30,8 @@ class _IntroducePageState extends State<IntroducePage> {
           ],
         ),
         body: Container(
-          padding: EdgeInsets.only(top: 60, bottom: 20, left: 20, right: 20),
+          padding:
+              const EdgeInsets.only(top: 60, bottom: 20, left: 20, right: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -41,10 +43,14 @@ class _IntroducePageState extends State<IntroducePage> {
                   child: const Text('Đăng nhập')),
               TextButton(
                   onPressed: () {
-
                     Navigator.pushNamed(context, DemoPage.id);
                   },
                   child: const Text('Xem dữ liệu demo')),
+              TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, DemoPage.id);
+                  },
+                  child: Text(LocaleKeys.get('title')).tr()),
             ],
           ),
         ));
