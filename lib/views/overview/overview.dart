@@ -53,8 +53,13 @@ class _OverviewPageState extends State<OverviewPage>
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  buildInfoOverview(),
-                  buildRevenueChart(),
+                  InfoOverView(),
+                  RevenueChart(),
+                  // DebtCollection(),
+                  // DebtMustPay(),
+                  // BestSeller(),
+                  // buildInfoOverview(),
+                  // buildRevenueChart(),
                   buildDebtCollection(),
                   buildDebtMustPay(),
                   buildBestSeller()
@@ -671,7 +676,404 @@ class _OverviewPageState extends State<OverviewPage>
       },
     );
   }
+
 }
+
+class InfoOverView extends StatelessWidget {
+  const InfoOverView({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(top: 8, bottom: 8),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding:
+                const EdgeInsets.only(top: 6.0, left: 10.0, bottom: 6.0),
+                child: Text(
+                  'ĐVT: triệu',
+                  style: TextStyle(fontSize: 14, color: Colors.black54),
+                ),
+              ),
+              Consumer<OverviewData>(
+              builder: (context, overviewData, child) {
+              return TextButton(
+                  onPressed: () {
+                    _showModalBottomSheet(context, overviewData);
+                  },
+                  child: InkWell(
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: const [
+                        Text(
+                          'Tháng này',
+                          style: TextStyle(
+                              color: Colors.black, fontWeight: FontWeight.w400),
+                        ),
+                        Icon(
+                          Icons.keyboard_arrow_down,
+                          color: Colors.black38,
+                        )
+                      ],
+                    ),
+                  ));}),
+
+            ],
+          ),
+          Consumer<OverviewData>(
+            builder: (context, overviewData, child) {
+              return ListView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: overviewData._infoOverviews.length,
+                itemBuilder: (context, index) {
+                  return InfoOverviewItem(
+                    infoOverview: overviewData._infoOverviews[index],
+                  );
+                },
+              );
+            },
+          )
+
+        ],
+      ),
+    );
+  }
+}
+
+class RevenueChart extends StatelessWidget {
+  const RevenueChart({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(top: 8, bottom: 8),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.all(Radius.circular(4)),
+        ),
+        padding: const EdgeInsets.all(16),
+        child:
+        Consumer<OverviewData>(
+          builder: (context, overviewData, child) {
+            return
+            Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: const [
+                        Text(
+                          'Doanh thu',
+                          style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          '  (triệu)',
+                        ),
+                      ],
+                    ),
+                    TextButton(
+                        onPressed: () {},
+                        child: InkWell(
+                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                          child: TextButton(
+                            style: ButtonStyle(
+                              backgroundColor:
+                              MaterialStateProperty.all(Colors.transparent),
+                            ),
+                            onPressed: () {
+                              _showModalBottomSheet(context,overviewData);
+                            },
+                            child: Row(
+                              children: [
+                                Text(
+                                  overviewData.optionRevenue.name,
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w400),
+                                ),
+                                Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: Colors.black38,
+                                )
+                              ],
+                            ),
+                          ),
+                        )),
+                  ],
+                ),
+                SizedBox(
+                  height: 300,
+                  child: DefaultTabController(
+                    initialIndex: 1,
+                    length: 3,
+                    child: Column(
+                      children: [
+                        Container(
+                          height: 30,
+                          decoration: const BoxDecoration(
+                            color: Colors.black12,
+                            borderRadius: BorderRadius.all(Radius.circular(8)),
+                          ),
+                          padding: const EdgeInsets.all(2),
+                          child: TabBar(
+                            onTap: (index) {
+                                overviewData.changeIndexRevenueChart(index);
+                            },
+                            indicator: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                color: Colors.white),
+                            tabs: <Widget>[
+                              Tab(
+                                child: Text(
+                                  'Doanh thu',
+                                  style: TextStyle(
+                                      color: overviewData.indexRevenueChart == 0
+                                          ? Colors.black
+                                          : Colors.black54,
+                                      fontSize: 12),
+                                ),
+                              ),
+                              Tab(
+                                child: Text(
+                                  'Chi phí',
+                                  style: TextStyle(
+                                      color: overviewData.indexRevenueChart == 1
+                                          ? Colors.black
+                                          : Colors.black54,
+                                      fontSize: 12),
+                                ),
+                              ),
+                              Tab(
+                                child: Text(
+                                  'Lợi nhuận',
+                                  style: TextStyle(
+                                      color: overviewData.indexRevenueChart == 2
+                                          ? Colors.black
+                                          : Colors.black54,
+                                      fontSize: 12),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: SLBarChart(index:overviewData.indexRevenueChart),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        )
+
+      ),
+    );
+  }
+}
+
+class DebtCollection extends StatelessWidget {
+  const DebtCollection({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
+
+class DebtMustPay extends StatelessWidget {
+  const DebtMustPay({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
+
+class SLBarChart extends StatelessWidget {
+  const SLBarChart({Key? key, required this.index}) : super(key: key);
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    return AspectRatio(
+      aspectRatio: 1.3,
+      child:
+      Consumer<OverviewData>(
+        builder: (context, overviewData, child) {
+          return
+          BarChart(
+            BarChartData(
+              titlesData: FlTitlesData(
+                show: true,
+                leftTitles: AxisTitles(
+                  drawBehindEverything: true,
+                  sideTitles: SideTitles(
+                    showTitles: false,
+                    reservedSize: 30,
+                    getTitlesWidget: (value, meta) {
+                      return Text(
+                        value.toInt().toString(),
+                        style: const TextStyle(
+                          color: Color(0xFF606060),
+                        ),
+                        textAlign: TextAlign.left,
+                      );
+                    },
+                  ),
+                ),
+                bottomTitles: AxisTitles(
+                  drawBehindEverything: true,
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 40,
+                    getTitlesWidget: (value, meta) {
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          value.toInt().toString(),
+                          style: const TextStyle(
+                            color: Color(0xFF606060),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                rightTitles: AxisTitles(),
+                topTitles: AxisTitles(),
+              ),
+              gridData: FlGridData(
+                show: true,
+                drawVerticalLine: false,
+                getDrawingHorizontalLine: (value) => FlLine(
+                  color: Colors.black12,
+                  dashArray: null,
+                  strokeWidth: 1,
+                ),
+              ),
+              borderData: FlBorderData(
+                show: false,
+                border: const Border.symmetric(
+                  horizontal: BorderSide(
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+              alignment: BarChartAlignment.spaceAround,
+              backgroundColor: Colors.white,
+              maxY: 20,
+              barTouchData: BarTouchData(
+                enabled: true,
+                touchTooltipData: BarTouchTooltipData(
+                  tooltipBgColor: Colors.orange,
+                  getTooltipItem: (
+                      BarChartGroupData group,
+                      int groupIndex,
+                      BarChartRodData rod,
+                      int rodIndex,
+                      ) {
+                    return BarTooltipItem(
+                      rod.toY.toString(),
+                      TextStyle(
+                        color: Colors.white,
+                        fontSize: 12.0,
+                      ),
+                    );
+                  },
+                ),
+                allowTouchBarBackDraw: true,
+                touchCallback: (event, response) {
+                  print('touch');
+                  if (event.isInterestedForInteractions &&
+                      response != null &&
+                      response.spot != null) {
+                      overviewData.updateTouchedGroupIndex(
+                          response.spot!.touchedBarGroupIndex);
+                      print(overviewData.touchedGroupIndex);
+
+                  }
+                },
+              ),
+              barGroups: DataOverview().getBarChartData(index).asMap().entries.map((e) {
+                final index = e.key;
+                final data = e.value;
+                return generateBarGroup(index, data.value, overviewData);
+              }).toList(),
+            ),
+          );
+        },
+      )
+
+    );
+  }
+}
+
+class BestSeller extends StatelessWidget {
+  const BestSeller({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
+
+void _showModalBottomSheet(BuildContext context, OverviewData overviewData) {
+  showModalBottomSheet(
+    context: context,
+    builder: (context) {
+      return Container(
+        width: double.infinity,
+        color: Colors.grey.shade200,
+        alignment: Alignment.center,
+        child: ListView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: overviewData._optionTimes.length,
+          itemBuilder: (context, index) {
+            return OptionTimeItem(
+              optionTime: overviewData._optionTimes[index],
+              buildContext: context,
+            );
+          },
+        ),
+      );
+    },
+  );
+}
+
+BarChartGroupData generateBarGroup(int x, double value, OverviewData overviewData) {
+  return
+    BarChartGroupData(
+    x: x,
+    barRods: [
+      BarChartRodData(
+        borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(2), topRight: Radius.circular(2)),
+        borderSide: BorderSide(
+            width: 2,
+            color: x == overviewData.touchedGroupIndex
+                ? Colors.orange
+                : Colors.black26),
+        toY: value,
+        color: Colors.green,
+        width: 15,
+      ),
+    ],
+    showingTooltipIndicators: overviewData.touchedGroupIndex == x ? [0] : [1],
+  );
+}
+
 
 class BestSellerItem extends StatelessWidget {
   const BestSellerItem({Key? key, required this.product}) : super(key: key);
@@ -816,5 +1218,19 @@ class OverviewData with ChangeNotifier {
     name: 'Tháng này',
   );
 
-  OverviewData() {}
+  OverviewData() {
+
+  }
+
+  void changeIndexRevenueChart(int index)
+  {
+    this.indexRevenueChart = index;
+    notifyListeners();
+  }
+
+  void updateTouchedGroupIndex(int index)
+  {
+    this.touchedGroupIndex = index;
+    notifyListeners();
+  }
 }
