@@ -28,21 +28,22 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   var listTile = <Widget>[
-    Padding(
-      key: UniqueKey(),
-      padding: const EdgeInsets.all(8.0),
-      child: Tile(),
-    ),
-    Padding(
-      key: UniqueKey(),
-      padding: const EdgeInsets.all(8.0),
-      child: Tile(),
-    ),
-    SizedBox(
-      key: UniqueKey(),
-      child: Text('kdkdkd'),
-    )
-  ]; // sửa dòng này
+
+    // Padding(
+    //   key: UniqueKey(),
+    //   padding: const EdgeInsets.all(8.0),
+    //   child: Tile(),
+    // ),
+    // Padding(
+    //   key: UniqueKey(),
+    //   padding: const EdgeInsets.all(8.0),
+    //   child: Tile(),
+    // ),
+    // SizedBox(
+    //   key: UniqueKey(),
+    //   child: Text('kdkdkd'),
+    // )
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -61,12 +62,30 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void swapTwoTileWidget() {
     setState(() {
-      listTile.insert(2, listTile.removeAt(0));
+      listTile.insert(1, listTile.removeAt(0));
     });
   }
 }
 
+class SLTile extends StatelessWidget {
+  const SLTile({Key? key, required this.getColor}) : super(key: key);
+  final Color Function() getColor;
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: getColor(),
+      height: 100,
+      width: 100,
+    );
+  }
+}
+
+
 class Tile extends StatefulWidget {
+
+  const Tile({Key? key}) : super(key: key);
   @override
   _TileState createState() => _TileState();
 }

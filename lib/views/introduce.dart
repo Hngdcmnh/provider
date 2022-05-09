@@ -46,11 +46,7 @@ class _IntroducePageState extends State<IntroducePage> {
                     Navigator.pushNamed(context, DemoPage.id);
                   },
                   child: const Text('Xem dữ liệu demo')),
-              TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, DemoPage.id);
-                  },
-                  child: Text(LocaleKeys.get('title')).tr()),
+
             ],
           ),
         ));

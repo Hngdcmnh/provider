@@ -4,13 +4,14 @@ import 'package:first_project/views/generated/locale_keys.g.dart';
 import 'package:first_project/views/overview/data_overview.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../model/BarData.dart';
 import '../../model/Company.dart';
 import 'data_overview.dart';
 import 'data_overview.dart';
 
 class OverviewPage extends StatefulWidget {
-  const OverviewPage({Key? key}) : super(key: key);
+  OverviewPage({Key? key}) : super(key: key);
 
   static String id = '/OverviewPage';
 
@@ -20,27 +21,25 @@ class OverviewPage extends StatefulWidget {
 
 class _OverviewPageState extends State<OverviewPage>
     with TickerProviderStateMixin {
-  late TabController _tabControllerRevenue;
-  late TabController _tabControllerBestSeller;
-  late List<InfoOverview> _infoOverviews = DataOverview().getInfoOverview();
-  late final List<Product> _bestRevenueProducts =
-      DataOverview().getListBestSellerProduct();
-  late final List<OptionTime> _optionTimes = DataOverview().getOptionTimes();
-  var indexRevenueChart = -1;
-  var touchedGroupIndex = -1;
-  var optionRevenue = OptionTime( name: 'Tháng này',);
+  final overviewData = OverviewData();
 
   @override
   void initState() {
     super.initState();
-    _tabControllerRevenue = TabController(length: 3, vsync: this);
-    _tabControllerBestSeller = TabController(length: 2, vsync: this);
-    _infoOverviews = DataOverview().getInfoOverview();
+    overviewData._tabControllerRevenue = TabController(length: 3, vsync: this);
+    overviewData._tabControllerBestSeller =
+        TabController(length: 2, vsync: this);
+    overviewData._infoOverviews = DataOverview().getInfoOverview();
+    // _tabControllerRevenue = TabController(length: 3, vsync: this);
+    // _tabControllerBestSeller = TabController(length: 2, vsync: this);
+    // _infoOverviews = DataOverview().getInfoOverview();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ChangeNotifierProvider<OverviewData>(
+      create: (context) => OverviewData(),
+      child:Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
@@ -65,7 +64,7 @@ class _OverviewPageState extends State<OverviewPage>
           ),
         ],
       ),
-    );
+    ) ,) ;
   }
 
   BarChartGroupData generateBarGroup(int x, double value) {
@@ -77,13 +76,15 @@ class _OverviewPageState extends State<OverviewPage>
               topLeft: Radius.circular(2), topRight: Radius.circular(2)),
           borderSide: BorderSide(
               width: 2,
-              color: x == touchedGroupIndex ? Colors.orange : Colors.black26),
+              color: x == overviewData.touchedGroupIndex
+                  ? Colors.orange
+                  : Colors.black26),
           toY: value,
           color: Colors.green,
           width: 15,
         ),
       ],
-      showingTooltipIndicators: touchedGroupIndex == x ? [0] : [1],
+      showingTooltipIndicators: overviewData.touchedGroupIndex == x ? [0] : [1],
     );
   }
 
@@ -96,10 +97,11 @@ class _OverviewPageState extends State<OverviewPage>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: 6.0,left: 10.0,bottom: 6.0),
+                padding:
+                    const EdgeInsets.only(top: 6.0, left: 10.0, bottom: 6.0),
                 child: Text(
                   'ĐVT: triệu',
-                  style: TextStyle(fontSize: 14,color: Colors.black54),
+                  style: TextStyle(fontSize: 14, color: Colors.black54),
                 ),
               ),
               TextButton(
@@ -107,16 +109,14 @@ class _OverviewPageState extends State<OverviewPage>
                     _showModalBottomSheet();
                   },
                   child: InkWell(
-                    borderRadius:
-                    const BorderRadius.all(Radius.circular(10)),
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: const [
                         Text(
                           'Tháng này',
                           style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.w400),
+                              color: Colors.black, fontWeight: FontWeight.w400),
                         ),
                         Icon(
                           Icons.keyboard_arrow_down,
@@ -130,10 +130,10 @@ class _OverviewPageState extends State<OverviewPage>
           ListView.builder(
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            itemCount: _infoOverviews.length,
+            itemCount: overviewData._infoOverviews.length,
             itemBuilder: (context, index) {
               return InfoOverviewItem(
-                infoOverview: _infoOverviews[index],
+                infoOverview: overviewData._infoOverviews[index],
               );
             },
           ),
@@ -186,9 +186,9 @@ class _OverviewPageState extends State<OverviewPage>
                     child: InkWell(
                       borderRadius: const BorderRadius.all(Radius.circular(10)),
                       child: TextButton(
-                        
                         style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(Colors.transparent),
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.transparent),
                         ),
                         onPressed: () {
                           _showModalBottomSheet();
@@ -196,7 +196,7 @@ class _OverviewPageState extends State<OverviewPage>
                         child: Row(
                           children: [
                             Text(
-                              optionRevenue.name,
+                              overviewData.optionRevenue.name,
                               style: TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.w400),
@@ -228,7 +228,7 @@ class _OverviewPageState extends State<OverviewPage>
                       child: TabBar(
                         onTap: (index) {
                           setState(() {
-                            indexRevenueChart = index;
+                            overviewData.indexRevenueChart = index;
                           });
                         },
                         indicator: BoxDecoration(
@@ -239,28 +239,37 @@ class _OverviewPageState extends State<OverviewPage>
                             child: Text(
                               'Doanh thu',
                               style: TextStyle(
-                                  color: indexRevenueChart ==0? Colors.black : Colors.black54, fontSize: 12),
+                                  color: overviewData.indexRevenueChart == 0
+                                      ? Colors.black
+                                      : Colors.black54,
+                                  fontSize: 12),
                             ),
                           ),
                           Tab(
                             child: Text(
                               'Chi phí',
                               style: TextStyle(
-                                  color: indexRevenueChart ==1? Colors.black : Colors.black54, fontSize: 12),
+                                  color: overviewData.indexRevenueChart == 1
+                                      ? Colors.black
+                                      : Colors.black54,
+                                  fontSize: 12),
                             ),
                           ),
                           Tab(
                             child: Text(
                               'Lợi nhuận',
                               style: TextStyle(
-                                  color: indexRevenueChart ==2? Colors.black : Colors.black54, fontSize: 12),
+                                  color: overviewData.indexRevenueChart == 2
+                                      ? Colors.black
+                                      : Colors.black54,
+                                  fontSize: 12),
                             ),
                           ),
                         ],
                       ),
                     ),
                     Expanded(
-                      child: buildBarChart(indexRevenueChart),
+                      child: buildBarChart(overviewData.indexRevenueChart),
                     ),
                   ],
                 ),
@@ -315,8 +324,7 @@ class _OverviewPageState extends State<OverviewPage>
                 children: const [
                   Text('6',
                       style: TextStyle(color: Colors.orange, fontSize: 20)),
-                  Text('0',
-                      style: TextStyle(color: Colors.black, fontSize: 20))
+                  Text('0', style: TextStyle(color: Colors.black, fontSize: 20))
                 ],
               ),
               Row(
@@ -373,7 +381,8 @@ class _OverviewPageState extends State<OverviewPage>
                 children: const [
                   Padding(
                     padding: EdgeInsets.only(bottom: 16.0),
-                    child: Text('TỔNG', style: TextStyle(color: Colors.black54)),
+                    child:
+                        Text('TỔNG', style: TextStyle(color: Colors.black54)),
                   )
                 ],
               ),
@@ -382,8 +391,7 @@ class _OverviewPageState extends State<OverviewPage>
                 children: const [
                   Text('10',
                       style: TextStyle(color: Colors.orange, fontSize: 20)),
-                  Text('0',
-                      style: TextStyle(color: Colors.black, fontSize: 20))
+                  Text('0', style: TextStyle(color: Colors.black, fontSize: 20))
                 ],
               ),
               Row(
@@ -496,8 +504,9 @@ class _OverviewPageState extends State<OverviewPage>
                   response != null &&
                   response.spot != null) {
                 setState(() {
-                  touchedGroupIndex = response.spot!.touchedBarGroupIndex;
-                  print(touchedGroupIndex);
+                  overviewData.touchedGroupIndex =
+                      response.spot!.touchedBarGroupIndex;
+                  print(overviewData.touchedGroupIndex);
                 });
               }
             },
@@ -601,25 +610,27 @@ class _OverviewPageState extends State<OverviewPage>
                           children: <Widget>[
                             SizedBox(
                               child: ListView.builder(
-                                physics:
-                                    const NeverScrollableScrollPhysics(),
+                                physics: const NeverScrollableScrollPhysics(),
                                 shrinkWrap: true,
-                                itemCount: _bestRevenueProducts.length,
+                                itemCount:
+                                    overviewData._bestRevenueProducts.length,
                                 itemBuilder: (context, index) {
                                   return BestSellerItem(
-                                      product: _bestRevenueProducts[index]);
+                                      product: overviewData
+                                          ._bestRevenueProducts[index]);
                                 },
                               ),
                             ),
                             SizedBox(
                               child: ListView.builder(
-                                physics:
-                                const NeverScrollableScrollPhysics(),
+                                physics: const NeverScrollableScrollPhysics(),
                                 shrinkWrap: true,
-                                itemCount: _bestRevenueProducts.length,
+                                itemCount:
+                                    overviewData._bestRevenueProducts.length,
                                 itemBuilder: (context, index) {
                                   return BestSellerItem(
-                                      product: _bestRevenueProducts[index]);
+                                      product: overviewData
+                                          ._bestRevenueProducts[index]);
                                 },
                               ),
                             ),
@@ -648,9 +659,12 @@ class _OverviewPageState extends State<OverviewPage>
           child: ListView.builder(
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            itemCount: _optionTimes.length,
+            itemCount: overviewData._optionTimes.length,
             itemBuilder: (context, index) {
-              return OptionTimeItem(optionTime: _optionTimes[index], buildContext: context,);
+              return OptionTimeItem(
+                optionTime: overviewData._optionTimes[index],
+                buildContext: context,
+              );
             },
           ),
         );
@@ -670,7 +684,7 @@ class BestSellerItem extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.only(top: 16.0,bottom: 16),
+            padding: const EdgeInsets.only(top: 16.0, bottom: 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -739,7 +753,7 @@ class InfoOverviewItem extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(LocaleKeys.get(infoOverview.title)).tr(),
+                Text(infoOverview.title),
                 Text(
                   infoOverview.value.toString(),
                   style: TextStyle(
@@ -767,17 +781,40 @@ class InfoOverviewItem extends StatelessWidget {
 }
 
 class OptionTimeItem extends StatelessWidget {
-  const OptionTimeItem({Key? key, required this.optionTime, required this.buildContext}) : super(key: key);
+  const OptionTimeItem(
+      {Key? key, required this.optionTime, required this.buildContext})
+      : super(key: key);
   final OptionTime optionTime;
   final BuildContext buildContext;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(onTap: (){
-        Navigator.of(buildContext).pop();
-    },child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Text(optionTime.name, style: TextStyle(color: Colors.black),),
-    ));
+    return InkWell(
+        onTap: () {
+          Navigator.of(buildContext).pop();
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text(
+            optionTime.name,
+            style: TextStyle(color: Colors.black),
+          ),
+        ));
   }
+}
+
+class OverviewData with ChangeNotifier {
+  late TabController _tabControllerRevenue;
+  late TabController _tabControllerBestSeller;
+  late List<InfoOverview> _infoOverviews = DataOverview().getInfoOverview();
+  late final List<Product> _bestRevenueProducts =
+      DataOverview().getListBestSellerProduct();
+  late final List<OptionTime> _optionTimes = DataOverview().getOptionTimes();
+  var indexRevenueChart = -1;
+  var touchedGroupIndex = -1;
+  var optionRevenue = OptionTime(
+    name: 'Tháng này',
+  );
+
+  OverviewData() {}
 }
