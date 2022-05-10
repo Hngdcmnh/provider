@@ -1,4 +1,3 @@
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:first_project/views/add.dart';
 import 'package:first_project/views/demo.dart';
@@ -7,6 +6,7 @@ import 'package:first_project/views/report/report.dart';
 import 'package:first_project/views/sign_in.dart';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'views/introduce.dart';
 import 'views/overview/overview.dart';
 
@@ -17,11 +17,10 @@ void main() async {
   runApp(
     EasyLocalization(
         supportedLocales: [Locale('ar', 'DZ')],
-        path: 'assets/translations', // <-- change the path of the translation files
+        path: 'assets/translations',
+        // <-- change the path of the translation files
         fallbackLocale: Locale('ar', 'DZ'),
-
-        child: MyApp()
-    ),
+        child: MyApp()),
   );
 }
 
@@ -30,23 +29,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Navigator',
-      initialRoute: IntroducePage.id,
-      routes:
-      {
-        SignInPage.id: (context) => const SignInPage(),
-        DemoPage.id: (context) => const DemoPage(),
-        IntroducePage.id: (context) => const IntroducePage(),
-        OverviewPage.id: (context)=> OverviewPage(),
-        AddPage.id: (context)=> const AddPage(),
-        HomePage.id: (context)=> const HomePage(),
-        ReportPage.id: (context)=> const ReportPage(),
-      },
+    return ChangeNotifierProvider(
+      create: (context) => IntroduceProvider(),
+      child: MaterialApp(
+        title: 'Navigator',
+        initialRoute: IntroducePage.id,
+        routes: {
+          SignInPage.id: (context) => const SignInPage(),
+          DemoPage.id: (context) => const DemoPage(),
+          IntroducePage.id: (context) => const IntroducePage(),
+          OverviewPage.id: (context) => OverviewPage(),
+          AddPage.id: (context) => const AddPage(),
+          HomePage.id: (context) => const HomePage(),
+          ReportPage.id: (context) => const ReportPage(),
+        },
+      ),
     );
   }
 }
-
-
-
-

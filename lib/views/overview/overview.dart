@@ -23,6 +23,7 @@ class _OverviewPageState extends State<OverviewPage>
     with TickerProviderStateMixin {
   final overviewData = OverviewData();
 
+
   @override
   void initState() {
     super.initState();
@@ -37,114 +38,41 @@ class _OverviewPageState extends State<OverviewPage>
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<OverviewData>(
-      create: (context) => OverviewData(),
-      child:Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-        title: const Text('Công ty'),
-      ),
-      body: Stack(
-        children: [
-          buildBackground(),
-          Container(
-            margin: const EdgeInsets.only(left: 20, right: 20),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  InfoOverView(),
-                  RevenueChart(),
-                  // DebtCollection(),
-                  // DebtMustPay(),
-                  // BestSeller(),
-                  // buildInfoOverview(),
-                  // buildRevenueChart(),
-                  buildDebtCollection(),
-                  buildDebtMustPay(),
-                  buildBestSeller()
-                ],
-              ),
-            ),
-          ),
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider<OverviewData>(
+              create: (context) => OverviewData()),
+          ChangeNotifierProvider<RevenueProvider>(
+              create: (context) => RevenueProvider()),
+          ChangeNotifierProvider<BottomSheetProvider>(
+              create: (context) => BottomSheetProvider())
         ],
-      ),
-    ) ,) ;
-  }
-
-  BarChartGroupData generateBarGroup(int x, double value) {
-    return BarChartGroupData(
-      x: x,
-      barRods: [
-        BarChartRodData(
-          borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(2), topRight: Radius.circular(2)),
-          borderSide: BorderSide(
-              width: 2,
-              color: x == overviewData.touchedGroupIndex
-                  ? Colors.orange
-                  : Colors.black26),
-          toY: value,
-          color: Colors.green,
-          width: 15,
-        ),
-      ],
-      showingTooltipIndicators: overviewData.touchedGroupIndex == x ? [0] : [1],
-    );
-  }
-
-  Widget buildInfoOverview() {
-    return Card(
-      margin: const EdgeInsets.only(top: 8, bottom: 8),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Scaffold(
+          appBar: AppBar(
+            backgroundColor: Colors.green,
+            foregroundColor: Colors.white,
+            title: const Text('Công ty'),
+          ),
+          body: Stack(
             children: [
-              Padding(
-                padding:
-                    const EdgeInsets.only(top: 6.0, left: 10.0, bottom: 6.0),
-                child: Text(
-                  'ĐVT: triệu',
-                  style: TextStyle(fontSize: 14, color: Colors.black54),
+              buildBackground(),
+              Container(
+                margin: const EdgeInsets.only(left: 20, right: 20),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      InfoOverView(),
+                      RevenueChart(),
+                      DebtCollection(),
+                      DebtMustPay(),
+                      BestSeller(),
+                    ],
+                  ),
                 ),
               ),
-              TextButton(
-                  onPressed: () {
-                    _showModalBottomSheet();
-                  },
-                  child: InkWell(
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: const [
-                        Text(
-                          'Tháng này',
-                          style: TextStyle(
-                              color: Colors.black, fontWeight: FontWeight.w400),
-                        ),
-                        Icon(
-                          Icons.keyboard_arrow_down,
-                          color: Colors.black38,
-                        )
-                      ],
-                    ),
-                  )),
             ],
           ),
-          ListView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: overviewData._infoOverviews.length,
-            itemBuilder: (context, index) {
-              return InfoOverviewItem(
-                infoOverview: overviewData._infoOverviews[index],
-              );
-            },
-          ),
-        ],
-      ),
-    );
+        ));
   }
 
   Widget buildBackground() {
@@ -159,134 +87,222 @@ class _OverviewPageState extends State<OverviewPage>
       ],
     );
   }
+}
 
-  Widget buildRevenueChart() {
+class InfoOverView extends StatelessWidget {
+  const InfoOverView({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(top: 8, bottom: 8),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(top: 6.0, left: 10.0, bottom: 6.0),
+                child: Text(
+                  'ĐVT: triệu',
+                  style: TextStyle(fontSize: 14, color: Colors.black54),
+                ),
+              ),
+              Consumer<BottomSheetProvider>(builder: (context, bottomSheetProvider, child) {
+                return
+                  TextButton(
+                    onPressed: () {
+                      _showModalBottomSheet(context, bottomSheetProvider);
+                    },
+                    child: InkWell(
+                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: const [
+                          Text(
+                            'Tháng này',
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w400),
+                          ),
+                          Icon(
+                            Icons.keyboard_arrow_down,
+                            color: Colors.black38,
+                          )
+                        ],
+                      ),
+                    ));
+              }),
+            ],
+          ),
+          Consumer<OverviewData>(
+            builder: (context, overviewData, child) {
+              return ListView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: overviewData._infoOverviews.length,
+                itemBuilder: (context, index) {
+                  return InfoOverviewItem(
+                    infoOverview: overviewData._infoOverviews[index],
+                  );
+                },
+              );
+            },
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class RevenueChart extends StatelessWidget {
+  const RevenueChart({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(top: 8, bottom: 8),
       child: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.all(Radius.circular(4)),
-        ),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: const [
-                    Text(
-                      'Doanh thu',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      '  (triệu)',
-                    ),
-                  ],
-                ),
-                TextButton(
-                    onPressed: () {},
-                    child: InkWell(
-                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                      child: TextButton(
-                        style: ButtonStyle(
-                          backgroundColor:
-                              MaterialStateProperty.all(Colors.transparent),
-                        ),
-                        onPressed: () {
-                          _showModalBottomSheet();
-                        },
-                        child: Row(
-                          children: [
-                            Text(
-                              overviewData.optionRevenue.name,
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w400),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.all(Radius.circular(4)),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Consumer<RevenueProvider>(
+            builder: (context, revenueProvider, child) {
+              return Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: const [
+                          Text(
+                            'Doanh thu',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            '  (triệu)',
+                          ),
+                        ],
+                      ),
+                      TextButton(
+                          onPressed: () {},
+                          child: InkWell(
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(10)),
+                              child: Consumer<BottomSheetProvider>(
+                                builder: (context, bottomSheetProvider, child) {
+                                  return TextButton(
+                                    style: ButtonStyle(
+                                      backgroundColor:
+                                          MaterialStateProperty.all(
+                                              Colors.transparent),
+                                    ),
+                                    onPressed: () {
+                                      _showModalBottomSheet(
+                                          context, bottomSheetProvider);
+                                    },
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          revenueProvider.optionRevenue.name,
+                                          style: TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.w400),
+                                        ),
+                                        Icon(
+                                          Icons.keyboard_arrow_down,
+                                          color: Colors.black38,
+                                        )
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ))),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 300,
+                    child: DefaultTabController(
+                      initialIndex: 1,
+                      length: 3,
+                      child: Column(
+                        children: [
+                          Container(
+                            height: 30,
+                            decoration: const BoxDecoration(
+                              color: Colors.black12,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8)),
                             ),
-                            Icon(
-                              Icons.keyboard_arrow_down,
-                              color: Colors.black38,
-                            )
-                          ],
-                        ),
-                      ),
-                    )),
-              ],
-            ),
-            SizedBox(
-              height: 300,
-              child: DefaultTabController(
-                initialIndex: 1,
-                length: 3,
-                child: Column(
-                  children: [
-                    Container(
-                      height: 30,
-                      decoration: const BoxDecoration(
-                        color: Colors.black12,
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
-                      ),
-                      padding: const EdgeInsets.all(2),
-                      child: TabBar(
-                        onTap: (index) {
-                          setState(() {
-                            overviewData.indexRevenueChart = index;
-                          });
-                        },
-                        indicator: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: Colors.white),
-                        tabs: <Widget>[
-                          Tab(
-                            child: Text(
-                              'Doanh thu',
-                              style: TextStyle(
-                                  color: overviewData.indexRevenueChart == 0
-                                      ? Colors.black
-                                      : Colors.black54,
-                                  fontSize: 12),
+                            padding: const EdgeInsets.all(2),
+                            child: TabBar(
+                              onTap: (index) {
+                                revenueProvider.changeIndexRevenueChart(index);
+                              },
+                              indicator: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  color: Colors.white),
+                              tabs: <Widget>[
+                                Tab(
+                                  child: Text(
+                                    'Doanh thu',
+                                    style: TextStyle(
+                                        color:
+                                        revenueProvider.indexRevenueChart == 0
+                                                ? Colors.black
+                                                : Colors.black54,
+                                        fontSize: 12),
+                                  ),
+                                ),
+                                Tab(
+                                  child: Text(
+                                    'Chi phí',
+                                    style: TextStyle(
+                                        color:
+                                        revenueProvider.indexRevenueChart == 1
+                                                ? Colors.black
+                                                : Colors.black54,
+                                        fontSize: 12),
+                                  ),
+                                ),
+                                Tab(
+                                  child: Text(
+                                    'Lợi nhuận',
+                                    style: TextStyle(
+                                        color:
+                                        revenueProvider.indexRevenueChart == 2
+                                                ? Colors.black
+                                                : Colors.black54,
+                                        fontSize: 12),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          Tab(
-                            child: Text(
-                              'Chi phí',
-                              style: TextStyle(
-                                  color: overviewData.indexRevenueChart == 1
-                                      ? Colors.black
-                                      : Colors.black54,
-                                  fontSize: 12),
-                            ),
-                          ),
-                          Tab(
-                            child: Text(
-                              'Lợi nhuận',
-                              style: TextStyle(
-                                  color: overviewData.indexRevenueChart == 2
-                                      ? Colors.black
-                                      : Colors.black54,
-                                  fontSize: 12),
-                            ),
+                          Expanded(
+                            child: SLBarChart(
+                                index: revenueProvider.indexRevenueChart),
                           ),
                         ],
                       ),
                     ),
-                    Expanded(
-                      child: buildBarChart(overviewData.indexRevenueChart),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+                  ),
+                ],
+              );
+            },
+          )),
     );
   }
+}
 
-  Widget buildDebtCollection() {
+class DebtCollection extends StatelessWidget {
+  const DebtCollection({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return SizedBox(
       height: 250,
       child: Card(
@@ -351,8 +367,13 @@ class _OverviewPageState extends State<OverviewPage>
       ),
     );
   }
+}
 
-  Widget buildDebtMustPay() {
+class DebtMustPay extends StatelessWidget {
+  const DebtMustPay({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return SizedBox(
       height: 250,
       child: Card(
@@ -418,116 +439,131 @@ class _OverviewPageState extends State<OverviewPage>
       ),
     );
   }
+}
 
-  Widget buildBarChart(int index) {
+class SLBarChart extends StatelessWidget {
+  const SLBarChart({Key? key, required this.index}) : super(key: key);
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 1.3,
-      child: BarChart(
-        BarChartData(
-          titlesData: FlTitlesData(
-            show: true,
-            leftTitles: AxisTitles(
-              drawBehindEverything: true,
-              sideTitles: SideTitles(
-                showTitles: false,
-                reservedSize: 30,
-                getTitlesWidget: (value, meta) {
-                  return Text(
-                    value.toInt().toString(),
-                    style: const TextStyle(
-                      color: Color(0xFF606060),
+        aspectRatio: 1.3,
+        child: Consumer<RevenueProvider>(
+          builder: (context, revenueProvider, child) {
+            return BarChart(
+              BarChartData(
+                titlesData: FlTitlesData(
+                  show: true,
+                  leftTitles: AxisTitles(
+                    drawBehindEverything: true,
+                    sideTitles: SideTitles(
+                      showTitles: false,
+                      reservedSize: 30,
+                      getTitlesWidget: (value, meta) {
+                        return Text(
+                          value.toInt().toString(),
+                          style: const TextStyle(
+                            color: Color(0xFF606060),
+                          ),
+                          textAlign: TextAlign.left,
+                        );
+                      },
                     ),
-                    textAlign: TextAlign.left,
-                  );
-                },
-              ),
-            ),
-            bottomTitles: AxisTitles(
-              drawBehindEverything: true,
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 40,
-                getTitlesWidget: (value, meta) {
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      value.toInt().toString(),
-                      style: const TextStyle(
-                        color: Color(0xFF606060),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            rightTitles: AxisTitles(),
-            topTitles: AxisTitles(),
-          ),
-          gridData: FlGridData(
-            show: true,
-            drawVerticalLine: false,
-            getDrawingHorizontalLine: (value) => FlLine(
-              color: Colors.black12,
-              dashArray: null,
-              strokeWidth: 1,
-            ),
-          ),
-          borderData: FlBorderData(
-            show: false,
-            border: const Border.symmetric(
-              horizontal: BorderSide(
-                color: Colors.black,
-              ),
-            ),
-          ),
-          alignment: BarChartAlignment.spaceAround,
-          backgroundColor: Colors.white,
-          maxY: 20,
-          barTouchData: BarTouchData(
-            enabled: true,
-            touchTooltipData: BarTouchTooltipData(
-              tooltipBgColor: Colors.orange,
-              getTooltipItem: (
-                BarChartGroupData group,
-                int groupIndex,
-                BarChartRodData rod,
-                int rodIndex,
-              ) {
-                return BarTooltipItem(
-                  rod.toY.toString(),
-                  TextStyle(
-                    color: Colors.white,
-                    fontSize: 12.0,
                   ),
-                );
-              },
-            ),
-            allowTouchBarBackDraw: true,
-            touchCallback: (event, response) {
-              print('touch');
-              if (event.isInterestedForInteractions &&
-                  response != null &&
-                  response.spot != null) {
-                setState(() {
-                  overviewData.touchedGroupIndex =
-                      response.spot!.touchedBarGroupIndex;
-                  print(overviewData.touchedGroupIndex);
-                });
-              }
-            },
-          ),
-          barGroups:
-              DataOverview().getBarChartData(index).asMap().entries.map((e) {
-            final index = e.key;
-            final data = e.value;
-            return generateBarGroup(index, data.value);
-          }).toList(),
-        ),
-      ),
-    );
+                  bottomTitles: AxisTitles(
+                    drawBehindEverything: true,
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 40,
+                      getTitlesWidget: (value, meta) {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            value.toInt().toString(),
+                            style: const TextStyle(
+                              color: Color(0xFF606060),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  rightTitles: AxisTitles(),
+                  topTitles: AxisTitles(),
+                ),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: Colors.black12,
+                    dashArray: null,
+                    strokeWidth: 1,
+                  ),
+                ),
+                borderData: FlBorderData(
+                  show: false,
+                  border: const Border.symmetric(
+                    horizontal: BorderSide(
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+                alignment: BarChartAlignment.spaceAround,
+                backgroundColor: Colors.white,
+                maxY: 20,
+                barTouchData: BarTouchData(
+                  enabled: true,
+                  touchTooltipData: BarTouchTooltipData(
+                    tooltipBgColor: Colors.orange,
+                    getTooltipItem: (
+                      BarChartGroupData group,
+                      int groupIndex,
+                      BarChartRodData rod,
+                      int rodIndex,
+                    ) {
+                      return BarTooltipItem(
+                        rod.toY.toString(),
+                        const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12.0,
+                        ),
+                      );
+                    },
+                  ),
+                  allowTouchBarBackDraw: true,
+                  touchCallback: (event, response) {
+                    print('touch');
+                    if (event.isInterestedForInteractions &&
+                        response != null &&
+                        response.spot != null) {
+                      revenueProvider.updateTouchedGroupIndex(
+                          response.spot!.touchedBarGroupIndex);
+                      print(revenueProvider.touchedGroupIndex);
+                    }
+                  },
+                ),
+                barGroups: DataOverview()
+                    .getBarChartData(index)
+                    .asMap()
+                    .entries
+                    .map((e) {
+                  final index = e.key;
+                  final data = e.value;
+                  return generateBarGroup(index, data.value, revenueProvider);
+                }).toList(),
+              ),
+            );
+          },
+        ));
   }
+}
 
-  Widget buildBestSeller() {
+class BestSeller extends StatelessWidget {
+  const BestSeller({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(top: 8, bottom: 20),
       child: Container(
@@ -538,497 +574,136 @@ class _OverviewPageState extends State<OverviewPage>
         padding: const EdgeInsets.all(20),
         child: SizedBox(
           width: double.infinity,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Consumer<OverviewData>(
+            builder: (context, overviewData, child) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    'Mặt hàng bán chạy',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const Text(
-                    ' (triệu)',
-                  ),
-                  TextButton(
-                      onPressed: () {
-                        _showModalBottomSheet();
-                      },
-                      child: InkWell(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(10)),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: const [
-                            Text(
-                              'Tháng này',
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w400),
-                            ),
-                            Icon(
-                              Icons.keyboard_arrow_down,
-                              color: Colors.black38,
-                            )
-                          ],
-                        ),
-                      )),
-                ],
-              ),
-              SizedBox(
-                height: 300,
-                child: DefaultTabController(
-                  initialIndex: 1,
-                  length: 2,
-                  child: Column(
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        height: 32,
-                        decoration: const BoxDecoration(
-                          color: Colors.black12,
-                          borderRadius: BorderRadius.all(Radius.circular(8)),
-                        ),
-                        padding: const EdgeInsets.all(2),
-                        child: TabBar(
-                          indicator: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              color: Colors.white),
-                          tabs: const <Widget>[
-                            Tab(
-                              child: Text(
-                                'Doanh thu',
-                                style: TextStyle(color: Colors.black54),
-                              ),
-                            ),
-                            Tab(
-                              child: Text(
-                                'Số lượng',
-                                style: TextStyle(color: Colors.black54),
-                              ),
-                            ),
-                          ],
-                        ),
+                      const Text(
+                        'Mặt hàng bán chạy',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                      Expanded(
-                        child: TabBarView(
-                          children: <Widget>[
-                            SizedBox(
-                              child: ListView.builder(
-                                physics: const NeverScrollableScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount:
-                                    overviewData._bestRevenueProducts.length,
-                                itemBuilder: (context, index) {
-                                  return BestSellerItem(
-                                      product: overviewData
-                                          ._bestRevenueProducts[index]);
-                                },
-                              ),
-                            ),
-                            SizedBox(
-                              child: ListView.builder(
-                                physics: const NeverScrollableScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount:
-                                    overviewData._bestRevenueProducts.length,
-                                itemBuilder: (context, index) {
-                                  return BestSellerItem(
-                                      product: overviewData
-                                          ._bestRevenueProducts[index]);
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
+                      const Text(
+                        ' (triệu)',
                       ),
+                      Consumer<BottomSheetProvider>(
+                          builder: (context, bottomSheetProvider, child) {
+                        return TextButton(
+                            onPressed: () {
+                              _showModalBottomSheet(
+                                  context, bottomSheetProvider);
+                            },
+                            child: InkWell(
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(10)),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: const [
+                                  Text(
+                                    'Tháng này',
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w400),
+                                  ),
+                                  Icon(
+                                    Icons.keyboard_arrow_down,
+                                    color: Colors.black38,
+                                  )
+                                ],
+                              ),
+                            ));
+                      }),
                     ],
                   ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showModalBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Container(
-          width: double.infinity,
-          color: Colors.grey.shade200,
-          alignment: Alignment.center,
-          child: ListView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: overviewData._optionTimes.length,
-            itemBuilder: (context, index) {
-              return OptionTimeItem(
-                optionTime: overviewData._optionTimes[index],
-                buildContext: context,
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-
-}
-
-class InfoOverView extends StatelessWidget {
-  const InfoOverView({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(top: 8, bottom: 8),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Padding(
-                padding:
-                const EdgeInsets.only(top: 6.0, left: 10.0, bottom: 6.0),
-                child: Text(
-                  'ĐVT: triệu',
-                  style: TextStyle(fontSize: 14, color: Colors.black54),
-                ),
-              ),
-              Consumer<OverviewData>(
-              builder: (context, overviewData, child) {
-              return TextButton(
-                  onPressed: () {
-                    _showModalBottomSheet(context, overviewData);
-                  },
-                  child: InkWell(
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: const [
-                        Text(
-                          'Tháng này',
-                          style: TextStyle(
-                              color: Colors.black, fontWeight: FontWeight.w400),
-                        ),
-                        Icon(
-                          Icons.keyboard_arrow_down,
-                          color: Colors.black38,
-                        )
-                      ],
-                    ),
-                  ));}),
-
-            ],
-          ),
-          Consumer<OverviewData>(
-            builder: (context, overviewData, child) {
-              return ListView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: overviewData._infoOverviews.length,
-                itemBuilder: (context, index) {
-                  return InfoOverviewItem(
-                    infoOverview: overviewData._infoOverviews[index],
-                  );
-                },
-              );
-            },
-          )
-
-        ],
-      ),
-    );
-  }
-}
-
-class RevenueChart extends StatelessWidget {
-  const RevenueChart({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(top: 8, bottom: 8),
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.all(Radius.circular(4)),
-        ),
-        padding: const EdgeInsets.all(16),
-        child:
-        Consumer<OverviewData>(
-          builder: (context, overviewData, child) {
-            return
-            Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: const [
-                        Text(
-                          'Doanh thu',
-                          style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          '  (triệu)',
-                        ),
-                      ],
-                    ),
-                    TextButton(
-                        onPressed: () {},
-                        child: InkWell(
-                          borderRadius: const BorderRadius.all(Radius.circular(10)),
-                          child: TextButton(
-                            style: ButtonStyle(
-                              backgroundColor:
-                              MaterialStateProperty.all(Colors.transparent),
+                  SizedBox(
+                    height: 300,
+                    child: DefaultTabController(
+                      initialIndex: 1,
+                      length: 2,
+                      child: Column(
+                        children: [
+                          Container(
+                            height: 32,
+                            decoration: const BoxDecoration(
+                              color: Colors.black12,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8)),
                             ),
-                            onPressed: () {
-                              _showModalBottomSheet(context,overviewData);
-                            },
-                            child: Row(
-                              children: [
-                                Text(
-                                  overviewData.optionRevenue.name,
-                                  style: TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w400),
+                            padding: const EdgeInsets.all(2),
+                            child: TabBar(
+                              indicator: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  color: Colors.white),
+                              tabs: const <Widget>[
+                                Tab(
+                                  child: Text(
+                                    'Doanh thu',
+                                    style: TextStyle(color: Colors.black54),
+                                  ),
                                 ),
-                                Icon(
-                                  Icons.keyboard_arrow_down,
-                                  color: Colors.black38,
-                                )
+                                Tab(
+                                  child: Text(
+                                    'Số lượng',
+                                    style: TextStyle(color: Colors.black54),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
-                        )),
-                  ],
-                ),
-                SizedBox(
-                  height: 300,
-                  child: DefaultTabController(
-                    initialIndex: 1,
-                    length: 3,
-                    child: Column(
-                      children: [
-                        Container(
-                          height: 30,
-                          decoration: const BoxDecoration(
-                            color: Colors.black12,
-                            borderRadius: BorderRadius.all(Radius.circular(8)),
+                          Expanded(
+                            child: TabBarView(
+                              children: <Widget>[
+                                SizedBox(
+                                  child: ListView.builder(
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    itemCount: overviewData
+                                        ._bestRevenueProducts.length,
+                                    itemBuilder: (context, index) {
+                                      return BestSellerItem(
+                                          product: overviewData
+                                              ._bestRevenueProducts[index]);
+                                    },
+                                  ),
+                                ),
+                                SizedBox(
+                                  child: ListView.builder(
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    itemCount: overviewData
+                                        ._bestRevenueProducts.length,
+                                    itemBuilder: (context, index) {
+                                      return BestSellerItem(
+                                          product: overviewData
+                                              ._bestRevenueProducts[index]);
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          padding: const EdgeInsets.all(2),
-                          child: TabBar(
-                            onTap: (index) {
-                                overviewData.changeIndexRevenueChart(index);
-                            },
-                            indicator: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                color: Colors.white),
-                            tabs: <Widget>[
-                              Tab(
-                                child: Text(
-                                  'Doanh thu',
-                                  style: TextStyle(
-                                      color: overviewData.indexRevenueChart == 0
-                                          ? Colors.black
-                                          : Colors.black54,
-                                      fontSize: 12),
-                                ),
-                              ),
-                              Tab(
-                                child: Text(
-                                  'Chi phí',
-                                  style: TextStyle(
-                                      color: overviewData.indexRevenueChart == 1
-                                          ? Colors.black
-                                          : Colors.black54,
-                                      fontSize: 12),
-                                ),
-                              ),
-                              Tab(
-                                child: Text(
-                                  'Lợi nhuận',
-                                  style: TextStyle(
-                                      color: overviewData.indexRevenueChart == 2
-                                          ? Colors.black
-                                          : Colors.black54,
-                                      fontSize: 12),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: SLBarChart(index:overviewData.indexRevenueChart),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            );
-          },
-        )
-
+                ],
+              );
+            },
+          ),
+        ),
       ),
     );
   }
 }
 
-class DebtCollection extends StatelessWidget {
-  const DebtCollection({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
-}
-
-class DebtMustPay extends StatelessWidget {
-  const DebtMustPay({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
-}
-
-class SLBarChart extends StatelessWidget {
-  const SLBarChart({Key? key, required this.index}) : super(key: key);
-  final int index;
-
-  @override
-  Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 1.3,
-      child:
-      Consumer<OverviewData>(
-        builder: (context, overviewData, child) {
-          return
-          BarChart(
-            BarChartData(
-              titlesData: FlTitlesData(
-                show: true,
-                leftTitles: AxisTitles(
-                  drawBehindEverything: true,
-                  sideTitles: SideTitles(
-                    showTitles: false,
-                    reservedSize: 30,
-                    getTitlesWidget: (value, meta) {
-                      return Text(
-                        value.toInt().toString(),
-                        style: const TextStyle(
-                          color: Color(0xFF606060),
-                        ),
-                        textAlign: TextAlign.left,
-                      );
-                    },
-                  ),
-                ),
-                bottomTitles: AxisTitles(
-                  drawBehindEverything: true,
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 40,
-                    getTitlesWidget: (value, meta) {
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          value.toInt().toString(),
-                          style: const TextStyle(
-                            color: Color(0xFF606060),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                rightTitles: AxisTitles(),
-                topTitles: AxisTitles(),
-              ),
-              gridData: FlGridData(
-                show: true,
-                drawVerticalLine: false,
-                getDrawingHorizontalLine: (value) => FlLine(
-                  color: Colors.black12,
-                  dashArray: null,
-                  strokeWidth: 1,
-                ),
-              ),
-              borderData: FlBorderData(
-                show: false,
-                border: const Border.symmetric(
-                  horizontal: BorderSide(
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-              alignment: BarChartAlignment.spaceAround,
-              backgroundColor: Colors.white,
-              maxY: 20,
-              barTouchData: BarTouchData(
-                enabled: true,
-                touchTooltipData: BarTouchTooltipData(
-                  tooltipBgColor: Colors.orange,
-                  getTooltipItem: (
-                      BarChartGroupData group,
-                      int groupIndex,
-                      BarChartRodData rod,
-                      int rodIndex,
-                      ) {
-                    return BarTooltipItem(
-                      rod.toY.toString(),
-                      TextStyle(
-                        color: Colors.white,
-                        fontSize: 12.0,
-                      ),
-                    );
-                  },
-                ),
-                allowTouchBarBackDraw: true,
-                touchCallback: (event, response) {
-                  print('touch');
-                  if (event.isInterestedForInteractions &&
-                      response != null &&
-                      response.spot != null) {
-                      overviewData.updateTouchedGroupIndex(
-                          response.spot!.touchedBarGroupIndex);
-                      print(overviewData.touchedGroupIndex);
-
-                  }
-                },
-              ),
-              barGroups: DataOverview().getBarChartData(index).asMap().entries.map((e) {
-                final index = e.key;
-                final data = e.value;
-                return generateBarGroup(index, data.value, overviewData);
-              }).toList(),
-            ),
-          );
-        },
-      )
-
-    );
-  }
-}
-
-class BestSeller extends StatelessWidget {
-  const BestSeller({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
-}
-
-void _showModalBottomSheet(BuildContext context, OverviewData overviewData) {
+void _showModalBottomSheet(
+    BuildContext context, BottomSheetProvider bottomSheetProvider) {
   showModalBottomSheet(
     context: context,
     builder: (context) {
@@ -1039,10 +714,10 @@ void _showModalBottomSheet(BuildContext context, OverviewData overviewData) {
         child: ListView.builder(
           physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
-          itemCount: overviewData._optionTimes.length,
+          itemCount: bottomSheetProvider._optionTimes.length,
           itemBuilder: (context, index) {
             return OptionTimeItem(
-              optionTime: overviewData._optionTimes[index],
+              optionTime: bottomSheetProvider._optionTimes[index],
               buildContext: context,
             );
           },
@@ -1052,9 +727,9 @@ void _showModalBottomSheet(BuildContext context, OverviewData overviewData) {
   );
 }
 
-BarChartGroupData generateBarGroup(int x, double value, OverviewData overviewData) {
-  return
-    BarChartGroupData(
+BarChartGroupData generateBarGroup(
+    int x, double value, RevenueProvider revenueProvider) {
+  return BarChartGroupData(
     x: x,
     barRods: [
       BarChartRodData(
@@ -1062,7 +737,7 @@ BarChartGroupData generateBarGroup(int x, double value, OverviewData overviewDat
             topLeft: Radius.circular(2), topRight: Radius.circular(2)),
         borderSide: BorderSide(
             width: 2,
-            color: x == overviewData.touchedGroupIndex
+            color: x == revenueProvider.touchedGroupIndex
                 ? Colors.orange
                 : Colors.black26),
         toY: value,
@@ -1070,10 +745,9 @@ BarChartGroupData generateBarGroup(int x, double value, OverviewData overviewDat
         width: 15,
       ),
     ],
-    showingTooltipIndicators: overviewData.touchedGroupIndex == x ? [0] : [1],
+    showingTooltipIndicators: revenueProvider.touchedGroupIndex == x ? [0] : [1],
   );
 }
-
 
 class BestSellerItem extends StatelessWidget {
   const BestSellerItem({Key? key, required this.product}) : super(key: key);
@@ -1199,7 +873,7 @@ class OptionTimeItem extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Text(
             optionTime.name,
-            style: TextStyle(color: Colors.black),
+            style: const TextStyle(color: Colors.black),
           ),
         ));
   }
@@ -1209,28 +883,32 @@ class OverviewData with ChangeNotifier {
   late TabController _tabControllerRevenue;
   late TabController _tabControllerBestSeller;
   late List<InfoOverview> _infoOverviews = DataOverview().getInfoOverview();
-  late final List<Product> _bestRevenueProducts =
-      DataOverview().getListBestSellerProduct();
-  late final List<OptionTime> _optionTimes = DataOverview().getOptionTimes();
+  late final List<Product> _bestRevenueProducts = DataOverview().getListBestSellerProduct();
+}
+
+class RevenueProvider with ChangeNotifier {
   var indexRevenueChart = -1;
   var touchedGroupIndex = -1;
   var optionRevenue = OptionTime(
     name: 'Tháng này',
   );
 
-  OverviewData() {
-
-  }
-
-  void changeIndexRevenueChart(int index)
-  {
-    this.indexRevenueChart = index;
+  void changeIndexRevenueChart(int index) {
+    indexRevenueChart = index;
     notifyListeners();
   }
 
-  void updateTouchedGroupIndex(int index)
-  {
-    this.touchedGroupIndex = index;
+  void updateTouchedGroupIndex(int index) {
+    touchedGroupIndex = index;
     notifyListeners();
   }
+}
+
+class BestSellerProvider with ChangeNotifier {
+  late final List<Product> _bestRevenueProducts =
+      DataOverview().getListBestSellerProduct();
+}
+
+class BottomSheetProvider with ChangeNotifier {
+  late final List<OptionTime> _optionTimes = DataOverview().getOptionTimes();
 }

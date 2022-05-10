@@ -34,7 +34,8 @@ class MyApp extends StatelessWidget {
                     color: Colors.green[200],
                     child: Consumer<MyModel>(
                       builder: (context, myModel, child) {
-                        return SizedBox(child: Text(myModel.text.toString()));
+                        return
+                          SizedBox(child: Text(myModel.text.toString()));
                       },
                     )),
               ],
